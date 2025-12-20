@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { CreateNote, Note, UpdateNote } from "../types/note";
+import type { CreateNote, Note } from "../types/note";
 
 export interface NotesHttpResponse {
   notes: Note[];
@@ -10,9 +10,13 @@ const MY_KEY = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 axios.defaults.baseURL = "https://notehub-public.goit.study/api";
 
-const getNotes = async (page: number): Promise<NotesHttpResponse> => {
+export const fetchNotes = async (
+  searchText: string,
+  page: number
+): Promise<NotesHttpResponse> => {
   const options = {
     params: {
+      ...(searchText !== "" && { search: searchText }),
       page,
       perPage: 12,
     },
@@ -21,12 +25,11 @@ const getNotes = async (page: number): Promise<NotesHttpResponse> => {
       Authorization: `Bearer ${MY_KEY}`,
     },
   };
-
-  const response = await axios.get<NotesHttpResponse>("/note", options);
+  const response = await axios.get<NotesHttpResponse>("/notes", options);
   return response.data;
 };
 
-const createNote = async (payload: CreateNote) => {
+export const createNote = async (payload: CreateNote): Promise<Note> => {
   const options = {
     params: {
       payload,
@@ -36,12 +39,11 @@ const createNote = async (payload: CreateNote) => {
       Authorization: `Bearer ${MY_KEY}`,
     },
   };
-
-  const response = await axios.post<Note>("/todos", options);
+  const response = await axios.post<Note>("/notes", options);
   return response.data;
 };
 
-const deleteNote = async (noteId: Note["id"]): Promise<void> => {
+export const deleteNote = async (noteId: Note["id"]): Promise<void> => {
   const options = {
     params: {
       noteId,
@@ -51,25 +53,5 @@ const deleteNote = async (noteId: Note["id"]): Promise<void> => {
       Authorization: `Bearer ${MY_KEY}`,
     },
   };
-  await axios.delete("/todos", options);
+  await axios.delete<void>("/notes", options);
 };
-
-const updateNote = async (
-  noteId: Note["id"],
-  payload: UpdateNote
-): Promise<Note> => {
-  const options = {
-    params: {
-      payload,
-      noteId,
-    },
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${MY_KEY}`,
-    },
-  };
-  const response = await axios.put<Note>("/todos", options);
-  return response.data;
-};
-
-export { getNotes, createNote, deleteNote, updateNote };

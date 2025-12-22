@@ -1,6 +1,6 @@
 import { useState } from "react";
 import css from "./App.module.css";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchNotes, type NotesHttpResponse } from "../../services/noteService";
 import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
@@ -33,6 +33,7 @@ export default function App() {
   } = useQuery<NotesHttpResponse, Error>({
     queryKey: ["notes", currentPage, searchText],
     queryFn: () => fetchNotes(searchText, currentPage),
+    placeholderData: keepPreviousData,
   });
 
   return (
@@ -66,7 +67,11 @@ export default function App() {
             setIsOpenModal(false);
           }}
         >
-          <NoteForm onClose={() => {}} />
+          <NoteForm
+            onClose={() => {
+              setIsOpenModal(false);
+            }}
+          />
         </Modal>
       )}
       <Toaster position="bottom-center" reverseOrder={true} />
